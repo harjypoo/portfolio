@@ -487,6 +487,7 @@ function cakeEngine(host, cv) {
       const m = host.cakeMouse;
       if (moving) { tAcc += dt; m.x += (m.tx - m.x) * Math.min(1, dt * 3); m.y += (m.ty - m.y) * Math.min(1, dt * 3); }
       else if (!host.cakeDirty) return;
+      if (moving && !host.cakeDirty && Math.abs(m.tx - m.x) < 0.0005 && Math.abs(m.ty - m.y) < 0.0005) return;
       host.cakeDirty = false;
       const { W, H, dpr } = host.cakeDim;
       const ctx = cv.getContext('2d');
@@ -517,18 +518,14 @@ function cakeEngine(host, cv) {
       };
       const ss = (v) => v * v * (3 - 2 * v);
       pieces.forEach((p, i) => {
-        if (!p.life) p.life = { t0: -Math.random() * 24, dur: 18 + Math.random() * 14, gap: 1.5 + Math.random() * 3 };
-        let u = (tAcc - p.life.t0) / p.life.dur;
-        if (u > 1 + p.life.gap / p.life.dur) { respawn(p, i); p.life.t0 = tAcc; p.life.dur = 18 + Math.random() * 14; p.life.gap = 1.5 + Math.random() * 3; u = 0; }
-        const fd = 4 / p.life.dur;
-        const fa = reduce ? 1 : (u < 0 ? 0 : u < fd ? ss(u / fd) : u < 1 - fd ? 1 : u < 1 ? ss((1 - u) / fd) : 0);
+        const fa = 1;
         if (fa <= 0.002) return;
         const sp = host.cakeSprites[i];
         const par = 3 + 22 * p.z;
-        const bob = Math.sin(tAcc * p.sp + p.ph) * (0.3 + 0.9 * p.z);
+        const bob = 0;
         const x = p.x * W - m.x * par;
         const y = p.y * VH - m.y * par * 0.7 + bob;
-        const rot = p.ang + m.x * 0.06 * p.z + Math.sin(tAcc * p.sp * 0.8 + p.ph * 1.3) * 0.015;
+        const rot = p.ang + m.x * 0.06 * p.z;
         ctx.save();
         ctx.translate(x, y); ctx.rotate(rot); ctx.scale(0.9 + 0.1 * fa, 0.9 + 0.1 * fa);
         ctx.globalAlpha = sp.alpha * fa;
