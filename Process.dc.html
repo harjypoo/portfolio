@@ -54,7 +54,7 @@ a{color:#FBE9DC}a:hover{color:#FFFFFF}
 
 html{scroll-behavior:smooth}
 .nointro .rise{animation:none!important}
-@media (max-width:860px){.sitefoot{flex-direction:column!important;justify-content:center!important;text-align:center;gap:26px!important}.sitefoot>*{justify-content:center}}.navrow{display:flex;flex-wrap:wrap;gap:8px 48px}
+@media (max-width:860px){.sitefoot{flex-direction:column!important;justify-content:center!important;text-align:center;gap:26px!important}.sitefoot>*{justify-content:center}}.site .glass::before,.site .glass::after{display:none!important;animation:none!important}.site .hdr .ltrace,.site .hdr .lshine{display:none!important;animation:none!important}.site .hdr .sugar{animation:none!important;opacity:.85!important}.navrow{display:flex;flex-wrap:wrap;gap:8px 48px}
 .hdr{position:sticky;top:0;z-index:40;pointer-events:none}.hdr>*{pointer-events:auto}
 .hdrglass{position:fixed;top:0;left:0;right:0;height:0;z-index:39;pointer-events:none;visibility:hidden;transition:visibility 0s linear .6s}.hdrglass.on{visibility:visible;transition:none}.hdrglass::before{content:"";position:absolute;z-index:-1;left:max(8px,calc(clamp(24px,9vw,140px) - 19.5px));right:max(8px,calc(clamp(24px,9vw,140px) - 19.5px));top:14px;height:78px;border-radius:22px;background:linear-gradient(135deg,rgba(255,236,224,.16),rgba(255,236,224,.06)),rgba(24,10,6,.22);box-shadow:inset 0 0 0 1px rgba(255,238,226,.24),inset 0 1px 0 rgba(255,255,255,.2),0 14px 34px -14px rgba(10,4,2,.55);opacity:0;transform:translateY(-10px) scale(.985);transition:opacity .45s ease,transform .6s cubic-bezier(.22,1,.36,1),background .6s,box-shadow .6s;pointer-events:none}
 .hdrglass.on::before{opacity:1;transform:none;-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%)}
@@ -578,10 +578,25 @@ class Component extends DCLogic {
     if (this.cakeRO) this.cakeRO.disconnect();
   }
 
-  componentDidMount() { this.themeListen(); }
+  syncChrome() {
+    cancelAnimationFrame(this._scR); clearTimeout(this._scT);
+    const run = () => {
+      let c = null;
+      for (const e of document.querySelectorAll('main, .pagebg')) { if (e.getBoundingClientRect().height > 0) { const bg = getComputedStyle(e).backgroundColor; if (bg && bg !== 'transparent' && !/rgba\([^)]*,\s*0\)$/.test(bg)) c = bg; } }
+      if (!c) return;
+      document.documentElement.style.backgroundColor = c; document.body.style.backgroundColor = c;
+      let m = document.querySelector('meta[name="theme-color"]'); if (!m) { m = document.createElement('meta'); m.setAttribute('name', 'theme-color'); document.head.appendChild(m); }
+      m.setAttribute('content', c);
+    };
+    this._scR = requestAnimationFrame(run); this._scT = setTimeout(run, 1800);
+  }
+  componentDidUpdate() { this.syncChrome(); }
+  componentDidMount() {
+    this.syncChrome(); this.themeListen(); }
   hdrInit() {
     this.hdrOff && this.hdrOff();
     const el = this.hdrEl; if (!el) return;
+    const sg = el.querySelector('.sugar svg'); if (sg && sg.pauseAnimations) { try { sg.pauseAnimations(); sg.setCurrentTime(3.9); } catch (e) {} }
     const tgts = [window];
     for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) { const o = getComputedStyle(a).overflowY; if (o === 'auto' || o === 'scroll') tgts.push(a); }
     const read = () => Math.max(window.scrollY || document.documentElement.scrollTop || 0, ...tgts.slice(1).map((t) => t.scrollTop));
@@ -653,7 +668,7 @@ class Component extends DCLogic {
       grainId: this._uid + 'g',
       rootRef: (el) => { this.rootEl = el; },
       rootStyle: '--blur: ' + (this.props.blur ?? 26) + 'px',
-      rootClass: [(this.props.motion ?? true) && !(this.state && this.state.paused) ? '' : 'still', this.props.skipIntro ? 'nointro' : '', this.themeKey() === 'cake' ? 'cake' : 'lava'].join(' ').trim(),
+      rootClass: [(this.props.motion ?? true) && !(this.state && this.state.paused) ? '' : 'still', this.props.skipIntro ? 'nointro' : '', this.themeKey() === 'cake' ? 'cake' : 'lava', 'site'].join(' ').trim(),
       themeNow: (this.themeNow = this.themeKey()),
       lavaPressed: this.themeKey() !== 'cake' ? 'true' : 'false',
       cakePressed: this.themeKey() === 'cake' ? 'true' : 'false',
