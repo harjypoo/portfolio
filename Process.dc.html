@@ -552,12 +552,12 @@ class Component extends DCLogic {
   themeKey() {
     const s = this.state || {};
     if (s.theme) return s.theme;
-    let ls = null; try { ls = window.localStorage.getItem('harjot-theme'); } catch (e) {}
+    let ls = null; try { ls = window.sessionStorage.getItem('harjot-theme'); } catch (e) {}
     return ls || this.props.theme || 'lava';
   }
   setTheme(t) {
     this.setState({ theme: t });
-    try { window.localStorage.setItem('harjot-theme', t); } catch (e) {}
+    try { window.sessionStorage.setItem('harjot-theme', t); } catch (e) {}
     try { window.dispatchEvent(new CustomEvent('harjot-theme', { detail: { t: t, src: this } })); } catch (e) {}
   }
   themeListen() {

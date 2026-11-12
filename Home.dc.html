@@ -526,12 +526,12 @@ class Component extends DCLogic {
   themeKey() {
     const s = this.state || {};
     if (s.theme) return s.theme;
-    let ls = null; try { ls = window.localStorage.getItem('harjot-theme'); } catch (e) {}
+    let ls = null; try { ls = window.sessionStorage.getItem('harjot-theme'); } catch (e) {}
     return ls || this.props.theme || 'lava';
   }
   setTheme(t) {
     this.setState({ theme: t });
-    try { window.localStorage.setItem('harjot-theme', t); } catch (e) {}
+    try { window.sessionStorage.setItem('harjot-theme', t); } catch (e) {}
     try { window.dispatchEvent(new CustomEvent('harjot-theme', { detail: { t: t, src: this } })); } catch (e) {}
   }
   themeListen() {
@@ -572,7 +572,7 @@ class Component extends DCLogic {
         entries.forEach((en) => {
           if (en.isIntersecting && en.intersectionRatio > 0.35) {
             const m = en.target.getAttribute('data-mood');
-            if (m && m !== ((this.state || {}).mood)) this.setState({ mood: m });
+            if (false && m && m !== ((this.state || {}).mood)) this.setState({ mood: m });
           }
         });
       }, { threshold: [0.35, 0.6] });
